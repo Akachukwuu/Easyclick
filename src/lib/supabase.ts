@@ -24,6 +24,7 @@ export const supabase = isSupabaseConfigured()
         update: () => Promise.resolve({ error: new Error('Supabase not configured') }),
         delete: () => Promise.resolve({ error: new Error('Supabase not configured') })
       }),
+      
       auth: {
         getSession: () => Promise.resolve({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),

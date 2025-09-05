@@ -59,7 +59,7 @@ export function Header() {
                 </a>
                 {isAdmin && (
                   <a
-                    href="#admin"
+                    href="/admin"
                     className="text-orange-600 hover:text-orange-700 transition-colors flex items-center gap-1"
                   >
                     <Shield className="w-4 h-4" />
