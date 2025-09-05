@@ -8,7 +8,7 @@ const featuredProducts = [
     id: 1,
     title: 'MacBook Pro 16"',
     description: "Unleash your creativity with the most powerful MacBook ever.",
-    price: "₦2,399",
+    price: "Brand New",
     image:
       "https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1200",
   },
@@ -17,7 +17,7 @@ const featuredProducts = [
     title: "Gaming Beast RTX 4080",
     description:
       "Experience ultimate gaming performance with cutting-edge graphics.",
-    price: "₦1,899",
+    price: "Brand New",
     image:
       "https://images.pexels.com/photos/777001/pexels-photo-777001.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
@@ -25,7 +25,7 @@ const featuredProducts = [
     id: 3,
     title: "Dell XPS 13",
     description: "Ultra-portable powerhouse for professionals on the go.",
-    price: "₦1,299",
+    price: "Brand New",
     image:
       "https://images.pexels.com/photos/205421/pexels-photo-205421.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
@@ -33,7 +33,7 @@ const featuredProducts = [
     id: 4,
     title: "Surface Laptop Studio",
     description: "Transform your workflow with this versatile 2-in-1 laptop.",
-    price: "₦1,699",
+    price: "Brand New",
     image:
       "https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
@@ -66,7 +66,7 @@ export function HeroCarousel() {
 
   return (
     <div
-      className="relative h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
+      className="relative h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-gray-600 to-slate-800"
       onMouseEnter={() => setIsAutoPlaying(false)}
       onMouseLeave={() => setIsAutoPlaying(true)}
     >

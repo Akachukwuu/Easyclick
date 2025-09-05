@@ -1,9 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Star, Heart, Shield, Truck, RotateCcw } from 'lucide-react';
-import { Product, supabase } from '../lib/supabase';
-import { useCart } from '../contexts/CartContext';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  ShoppingCart,
+  ArrowLeft,
+  Star,
+  Heart,
+  Shield,
+  Truck,
+  RotateCcw,
+} from "lucide-react";
+import { Product, supabase } from "../lib/supabase";
+import { useCart } from "../contexts/CartContext";
 
 export function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,31 +23,41 @@ export function ProductDetailsPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const { addToCart } = useCart();
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   useEffect(() => {
-    if (id) {
-      fetchProduct(id);
-    }
+    if (id) fetchProduct(id);
   }, [id]);
+
+  // Reset carousel index when product changes
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [product?.id]);
 
   const fetchProduct = async (productId: string) => {
     try {
       const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', productId)
+        .from("products")
+        .select("*, product_images(image_url)")
+        .eq("id", productId)
         .single();
-      
+
       if (error) {
-        if (error.code === 'PGRST116') {
-          throw new Error('Product not found');
+        if ((error as any).code === "PGRST116") {
+          throw new Error("Product not found");
         }
         throw error;
       }
-      
-      setProduct(data);
-    } catch (error) {
-      console.error('Error fetching product:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch product');
+
+      // Map to your simplified type: { url: string }
+      const images = (data.product_images || []).map((img: any) => ({
+        url: img.image_url,
+      }));
+
+      setProduct({ ...data, product_images: images });
+    } catch (err) {
+      console.error("Error fetching product:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch product");
     } finally {
       setLoading(false);
     }
@@ -47,19 +65,13 @@ export function ProductDetailsPage() {
 
   const handleAddToCart = () => {
     if (!product) return;
-    
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
-    }
-    
+    for (let i = 0; i < quantity; i++) addToCart(product);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
   const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= 10) {
-      setQuantity(newQuantity);
-    }
+    if (newQuantity >= 1 && newQuantity <= 10) setQuantity(newQuantity);
   };
 
   if (loading) {
@@ -74,10 +86,14 @@ export function ProductDetailsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Product Not Found</h2>
-          <p className="text-gray-600 mb-6">{error || 'The product you\'re looking for doesn\'t exist.'}</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Product Not Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error || "The product you're looking for doesn't exist."}
+          </p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             Back to Home
@@ -87,11 +103,24 @@ export function ProductDetailsPage() {
     );
   }
 
+  // Build the carousel source list from mapped urls
+  const images = product.product_images?.length
+    ? product.product_images.map((img) => img.url)
+    : [product.image_url || "/api/placeholder/600/600"];
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-6">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors mb-8"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -100,16 +129,49 @@ export function ProductDetailsPage() {
 
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Product Image */}
+            {/* Product Image Carousel */}
             <div className="relative">
               <motion.img
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                key={images[currentIndex]}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                src={product.image_url || '/api/placeholder/600/600'}
+                src={images[currentIndex]}
                 alt={product.name}
                 className="w-full h-96 lg:h-full object-cover"
               />
+
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrev}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-3 rounded-full shadow"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-3 rounded-full shadow"
+                  >
+                    ›
+                  </button>
+
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentIndex(i)}
+                        className={`w-3 h-3 rounded-full ${
+                          i === currentIndex ? "bg-blue-600" : "bg-gray-300"
+                        }`}
+                        aria-label={`Show image ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Floating Icons */}
               <div className="absolute top-4 right-4">
                 <button className="bg-white/90 p-3 rounded-full hover:bg-red-50 transition-colors duration-200 shadow-lg">
                   <Heart className="w-6 h-6 text-gray-600 hover:text-red-500" />
@@ -118,7 +180,9 @@ export function ProductDetailsPage() {
               <div className="absolute top-4 left-4">
                 <div className="flex items-center bg-white/90 rounded-full px-4 py-2 shadow-lg">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="text-sm font-medium ml-1">4.8 (124 reviews)</span>
+                  <span className="text-sm font-medium ml-1">
+                    4.8 (124 reviews)
+                  </span>
                 </div>
               </div>
             </div>
@@ -133,7 +197,7 @@ export function ProductDetailsPage() {
                 <h1 className="text-3xl font-bold text-gray-800 mb-4">
                   {product.name}
                 </h1>
-                
+
                 <div className="text-4xl font-bold text-blue-600 mb-6">
                   ₦{product.price.toLocaleString()}
                 </div>
@@ -154,7 +218,9 @@ export function ProductDetailsPage() {
                     >
                       -
                     </button>
-                    <span className="text-xl font-semibold w-8 text-center">{quantity}</span>
+                    <span className="text-xl font-semibold w-8 text-center">
+                      {quantity}
+                    </span>
                     <button
                       onClick={() => handleQuantityChange(quantity + 1)}
                       className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
@@ -171,12 +237,12 @@ export function ProductDetailsPage() {
                   whileTap={{ scale: 0.98 }}
                   className={`w-full py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-3 transition-all duration-300 ${
                     addedToCart
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl'
+                      ? "bg-green-600 text-white"
+                      : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl"
                   }`}
                 >
                   <ShoppingCart className="w-6 h-6" />
-                  {addedToCart ? 'Added to Cart!' : `Add ${quantity} to Cart`}
+                  {addedToCart ? "Added to Cart!" : `Add ${quantity} to Cart`}
                 </motion.button>
 
                 {/* Features */}

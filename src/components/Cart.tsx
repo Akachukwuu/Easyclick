@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Plus, Minus, ShoppingBag } from "lucide-react";
+import { useCart } from "../contexts/CartContext";
 
 interface CartProps {
   isOpen: boolean;
@@ -8,7 +8,8 @@ interface CartProps {
 }
 
 export function Cart({ isOpen, onClose }: CartProps) {
-  const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+  const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } =
+    useCart();
 
   return (
     <AnimatePresence>
@@ -22,10 +23,10 @@ export function Cart({ isOpen, onClose }: CartProps) {
             onClick={onClose}
           />
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 20, stiffness: 100 }}
             className="fixed right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl z-50 flex flex-col"
           >
             <div className="flex items-center justify-between p-6 border-b">
@@ -59,24 +60,38 @@ export function Cart({ isOpen, onClose }: CartProps) {
                       className="flex items-center space-x-4 bg-gray-50 rounded-lg p-4"
                     >
                       <img
-                        src={item.product.image_url || '/api/placeholder/80/80'}
+                        src={
+                          item.product.product_images?.[0]?.url ||
+                          "/api/placeholder/80/80"
+                        }
                         alt={item.product.name}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
+
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">{item.product.name}</h3>
-                        <p className="text-gray-600">₦{item.product.price.toLocaleString()}</p>
+                        <h3 className="font-semibold text-gray-800">
+                          {item.product.name}
+                        </h3>
+                        <p className="text-gray-600">
+                          ₦{item.product.price.toLocaleString()}
+                        </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          onClick={() =>
+                            updateQuantity(item.product.id, item.quantity - 1)
+                          }
                           className="p-1 hover:bg-gray-200 rounded-full transition-colors"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-8 text-center font-medium">{item.quantity}</span>
+                        <span className="w-8 text-center font-medium">
+                          {item.quantity}
+                        </span>
                         <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          onClick={() =>
+                            updateQuantity(item.product.id, item.quantity + 1)
+                          }
                           className="p-1 hover:bg-gray-200 rounded-full transition-colors"
                         >
                           <Plus className="w-4 h-4" />

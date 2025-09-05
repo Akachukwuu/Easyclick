@@ -34,16 +34,21 @@ export const supabase = isSupabaseConfigured()
     } as any;
 
 
+export interface ProductImage {
+  url: string; // The URL of each image
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string | null;
   price: number;
-  image_url: string | null;
+  image_url: string; 
+  product_images: ProductImage[]; 
   created_at: string;
 }
 
 export interface CartItem {
-  product: Product;
+  product: Product; // Cart should reference the Product, not ProductImage
   quantity: number;
 }

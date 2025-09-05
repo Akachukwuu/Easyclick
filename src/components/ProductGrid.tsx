@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ShoppingCart, Star, Heart } from "lucide-react";
-import { Product, supabase, isSupabaseConfigured } from "../lib/supabase";
+import {
+  Product,
+  ProductImage,
+  supabase,
+  isSupabaseConfigured,
+} from "../lib/supabase";
 import { useCart } from "../contexts/CartContext";
 
 export function ProductGrid() {
@@ -18,9 +23,7 @@ export function ProductGrid() {
 
   const fetchProducts = async () => {
     if (!isSupabaseConfigured()) {
-      setError(
-        'Supabase connection not configured. Please click "Connect to Supabase" in the top right corner to set up your database connection.'
-      );
+      setError("Supabase connection not configured...");
       setLoading(false);
       return;
     }
@@ -28,22 +31,22 @@ export function ProductGrid() {
     try {
       const { data, error } = await supabase
         .from("products")
-        .select("*")
+        .select("*, product_images(image_url)")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Supabase error:", error);
-        if (
-          error.code === "PGRST116" ||
-          error.message.includes("Could not find the table")
-        ) {
-          throw new Error(
-            "Products table not found. Please create the products table in your Supabase database."
-          );
-        }
-        throw new Error(`Database error: ${error.message}`);
-      }
-      setProducts(data || []);
+      if (error) throw error;
+
+      // Map product_images filenames to public URLs
+      const productsWithUrls: Product[] = (data || []).map((product: any) => {
+        // product_images is already [{ id, product_id, image_url }]
+        const images: ProductImage[] = (product.product_images || []).map(
+          (img: any) => ({ url: img.image_url })
+        );
+
+        return { ...product, product_images: images };
+      });
+
+      setProducts(productsWithUrls);
       setError(null);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -78,27 +81,6 @@ export function ProductGrid() {
                   : "Configuration Required"}
               </h3>
               <p className="text-yellow-700 mb-4">{error}</p>
-              {error.includes("Products table not found") ? (
-                <div className="text-sm text-yellow-600 space-y-2">
-                  <p className="font-medium">To create the products table:</p>
-                  <ol className="list-decimal list-inside space-y-1 ml-4">
-                    <li>Go to your Supabase project dashboard</li>
-                    <li>Navigate to the "SQL Editor" section</li>
-                    <li>Run the SQL migration from the project files</li>
-                  </ol>
-                  <p className="mt-2">
-                    The migration file is located at:{" "}
-                    <code className="bg-yellow-100 px-1 rounded">
-                      supabase/migrations/create_products_table.sql
-                    </code>
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-yellow-600">
-                  Please click "Connect to Supabase" in the top right corner to
-                  set up your database connection.
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -146,7 +128,11 @@ export function ProductGrid() {
             >
               <div className="relative overflow-hidden">
                 <img
-                  src={product.image_url || "/api/placeholder/400/300"}
+                  src={
+                    product.product_images.length > 0
+                      ? product.product_images[0].url
+                      : "/api/placeholder/400/300"
+                  }
                   alt={product.name}
                   className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
