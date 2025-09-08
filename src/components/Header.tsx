@@ -26,7 +26,7 @@ export function Header() {
             <div className="flex items-center space-x-8">
               <a href="#home" className="flex items-center">
                 <img
-                  src="/logo.jpg" // 👈 place your logo in the public/ folder (e.g., public/logo.png)
+                  src="/logo.jpg"
                   alt="EasyClick Gadgets"
                   className="h-16 w-32"
                 />
@@ -153,7 +153,7 @@ export function Header() {
                   </a>
                   {isAdmin && (
                     <a
-                      href="#admin"
+                      href="/admin"
                       className="text-orange-600 hover:text-orange-700 transition-colors flex items-center gap-1"
                     >
                       <Shield className="w-4 h-4" />
